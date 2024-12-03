@@ -1,5 +1,5 @@
 CXX ?= g++
-CXXFLAGS := -c -g
+CXXFLAGS := -Isrc/ -c -g 
 LDFLAGS = 
 
 AR ?= ar
@@ -22,6 +22,8 @@ testing_bin/test_bin:  testing_bin/main.o $(SRCDIR)/libast.a
 	$(CXX) $(CXXFLAGS) -o $@ $<
 
 
+run: testing_bin/test_bin
+	./$<
 
 clean:
-	rm -f $(SRCDIR)/*.o $(SRCDIR)/*.a
+	rm -f $(SRCDIR)/*.o $(SRCDIR)/*.a testing_bin/*.o

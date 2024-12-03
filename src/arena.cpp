@@ -1,7 +1,6 @@
 #include "arena.h"
 #include <sys/mman.h>
 #include <assert.h>
-#include <stdio.h>
 
 int PAGE = 4096;
 int HUGE_PAGE = 2 * 1024 * 1024;
@@ -14,16 +13,20 @@ ArenaChunk::ArenaChunk(int size) : size(size), used(0) {
     printf("new chunk of size %d allocated at %p\n", this->size, this->ptr);
 }
 
-Arena::Arena(){
+Arena::Arena() : should_grow(true) {
     this->arenaChunks = std::vector<ArenaChunk>({ ArenaChunk(PAGE) });
-    // TODO
+}
+
+
+Arena::Arena(int initial_size, bool should_grow) : should_grow(should_grow) {
+    this->arenaChunks = std::vector<ArenaChunk>({ ArenaChunk(initial_size) });
 }
 
 Arena::~Arena(){
     for (int i = 0; i < this->arenaChunks.size(); i++){
         auto& chunk = arenaChunks.at(i);
-        munmap((void*)chunk.get_ptr(), chunk.size);
-        printf("unmapped page at %p\n", chunk.get_ptr());
+        munmap((void*)chunk.ptr, chunk.size);
+        printf("unmapped page at %p\n", chunk.ptr);
     }
 }
 
@@ -37,6 +40,32 @@ ArenaChunk& Arena::add_chunk(){
     return this->arenaChunks.back();
 }
 
-int Arena::get_offset(void* expr_ptr){
-    return 0;
+void* Arena::ptr_from_offset(int offset){
+    if (arenaChunks.size() == 1){
+        return (void*)(arenaChunks.begin()->ptr + (long)offset);
+    }
+
+
+    int pos_arena = -1;
+    int size_arenas = 0;
+    for (int i = 0; i < arenaChunks.size(); i++){
+        if (size_arenas + arenaChunks[i].size > offset){
+            pos_arena = i;
+            break;
+        }
+        size_arenas += arenaChunks[i].size;
+    }
+    if (pos_arena == -1){
+        fprintf(stderr, "Offset %d out of bounds\n", offset);
+        exit(1);
+    }
+
+    int local_arena_offset = offset - size_arenas;
+
+    return (void*)(arenaChunks[pos_arena].ptr + (long)local_arena_offset);
 }
+
+/*int Arena::get_offset(void* expr_ptr){
+    
+    return 0;
+}*/

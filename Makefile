@@ -1,11 +1,12 @@
 CXX ?= g++
-CXXFLAGS := -Isrc/ -c -g 
+CXXFLAGS := -Isrc/ -MMD -c -g 
 LDFLAGS = 
 
 AR ?= ar
 SRCDIR = src
 SRCS := $(wildcard $(SRCDIR)/*.cpp)
 OBJS = $(patsubst %.cpp,%.o,$(SRCS))
+DEP = $(OBJS:%.o=%.d)
 
 lib: $(SRCDIR)/libast.a
 
@@ -16,6 +17,9 @@ bin: testing_bin/test_bin
 
 testing_bin/test_bin:  testing_bin/main.o $(SRCDIR)/libast.a
 	$(CXX) $(LDFLAGS) -o $@ $^
+
+
+-include $(DEP)
 
 
 %.o:%.cpp

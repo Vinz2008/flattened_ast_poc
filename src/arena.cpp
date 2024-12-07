@@ -2,8 +2,8 @@
 #include <sys/mman.h>
 #include <assert.h>
 
-int PAGE = 4096;
-int HUGE_PAGE = 2 * 1024 * 1024;
+const int PAGE = 4096;
+const int HUGE_PAGE = 2 * 1024 * 1024;
 // https://github.com/rust-lang/rust/blob/master/compiler/rustc_arena/src/lib.rs could be useful
 
 
